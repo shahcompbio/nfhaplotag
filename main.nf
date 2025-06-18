@@ -13,7 +13,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { NFPHASING  } from './workflows/nfphasing'
+include { NFPHAPLOTAG  } from './workflows/nfhaplotag'
 
 
 /*
@@ -25,7 +25,7 @@ include { NFPHASING  } from './workflows/nfphasing'
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_NFPHASING {
+workflow NFCORE_NFHAPLOTAG {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -35,7 +35,7 @@ workflow NFCORE_NFPHASING {
     //
     // WORKFLOW: Run pipeline
     //
-    NFPHASING (
+    NFPHAPLOTAG (
         samplesheet
     )
 
@@ -58,7 +58,7 @@ if (!params.outdir) {
 workflow {
 
     main:
-    NFCORE_NFPHASING (
+    NFCORE_NFHAPLOTAG (
         params.input
     )
 }
