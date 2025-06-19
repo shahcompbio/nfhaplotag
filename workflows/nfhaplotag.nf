@@ -16,6 +16,7 @@ println "Running with the following parameters:"
 println "Input samplesheet: ${params.input}"
 
 no_file_name = file(params.no_file).name
+haplotag_qc_script = file("${workflow.projectDir}/subworkflows/local/haplotag_qc/haplotagqc.py")
 
 workflow NFPHAPLOTAG {
 
@@ -52,9 +53,15 @@ workflow NFPHAPLOTAG {
         }
 
 
-    whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
-    longphase_haplotag_results = longphase_haplotag(longphase_inputs)
-    indexed_bams = index_bam(longphase_haplotag_results.haplotagged_bam.concat( whatshap_haplotag_results.haplotagged_bam))
+    // whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
+    // longphase_haplotag_results = longphase_haplotag(longphase_inputs)
+    // indexed_bams = index_bam(longphase_haplotag_results.haplotagged_bam.concat( whatshap_haplotag_results.haplotagged_bam))
+    
+    haplotag_qc_ch = inputs.map { 
+        ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
+        [sample, bam, haplotag_qc_script]
+    }
+    haplotag_qc_results = haplotag_qc(haplotag_qc_ch)
 
 }
 
@@ -123,6 +130,27 @@ process longphase_haplotag {
         -o "$haplotagged_prefix"
     """
 }
+
+process haplotag_qc {
+    container "quay.io/shahlab_singularity/haplotagqc:latest"
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    tuple val(sample), path(haplotagged_bam), path(script)
+
+    output:
+    path "*.txt", emit: phasing_qc_txt
+    path "*.png", emit: phasing_qc_png
+
+
+    script:
+    """
+    python phasingqc.py \\
+        --bam "$haplotagged_bam" \\
+        --sample "${sample}}"
+    """
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
