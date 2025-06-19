@@ -54,6 +54,7 @@ workflow NFPHAPLOTAG {
 
     whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
     longphase_haplotag_results = longphase_haplotag(longphase_inputs)
+    indexed_bams = index_bam(longphase_haplotag_results.haplotagged_bam.concat( whatshap_haplotag_results.haplotagged_bam))
 
 }
 
