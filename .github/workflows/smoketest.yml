@@ -1,12 +1,5 @@
 name: Run smoketest
 on:
-  push:
-    paths-ignore:
-      - "docs/**"
-      - "**/meta.yml"
-      - "**/*.md"
-      - "**/*.png"
-      - "**/*.svg"
   pull_request:
     paths-ignore:
       - "docs/**"
@@ -18,10 +11,6 @@ on:
     types: [published]
   workflow_dispatch:
 
-# Cancel if a newer run is started
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
