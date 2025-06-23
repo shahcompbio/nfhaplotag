@@ -53,27 +53,27 @@ workflow NFPHAPLOTAG {
         }
 
 
-    // whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
-    // longphase_haplotag_results = longphase_haplotag(longphase_inputs)
-    // indexed_bams = index_bam(longphase_haplotag_results.haplotagged_bam.concat( whatshap_haplotag_results.haplotagged_bam))
+    whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
+    longphase_haplotag_results = longphase_haplotag(longphase_inputs)
+    indexed_bams = index_bam(longphase_haplotag_results.concat( whatshap_haplotag_results))
     
-    haplotag_qc_ch = inputs.map { 
-        ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
-        [sample, bam, haplotag_qc_script]
+    haplotag_qc_ch = indexed_bams.map { 
+        sample, bam, bam_index ->  
+        [sample, bam, bam_index, haplotag_qc_script]
     }
     haplotag_qc_results = haplotag_qc(haplotag_qc_ch)
 
 }
 
 process index_bam {
-    publishDir params.outdir
+    publishDir params.outdir, mode: 'copy'
     container "quay.io/biocontainers/samtools:1.22--h96c455f_0"
 
     input:
-    path bam
+    tuple val(sample), path(bam)
 
     output:
-    path indexed_bam, emit: indexed_bam
+    tuple val(sample), path(bam), path(indexed_bam)
 
     script:
     indexed_bam = "${bam}.bai"
@@ -83,14 +83,14 @@ process index_bam {
 }
 
 process whatshap_haplotag {
+    publishDir params.outdir, mode: 'copy'
     container "quay.io/biocontainers/whatshap:2.8--py312hf731ba3_0"
-    publishDir params.outdir
 
     input:
     tuple path(ref), path(ref_index), val(sample), path(bam), path(bam_index), path(phased_vcf), path(phased_vcf_index)
 
     output:
-    path haplotagged_bam, emit: haplotagged_bam
+    tuple val(sample), path (haplotagged_bam)
 
     script:
     haplotagged_bam = "${sample}_whatshap_haplotag.bam"
@@ -106,14 +106,14 @@ process whatshap_haplotag {
 }
 
 process longphase_haplotag {
+    publishDir params.outdir, mode: 'copy'
     container "quay.io/biocontainers/longphase:1.7.3--hf5e1c6e_0"
-    publishDir params.outdir
 
     input:
     tuple path(ref), path(ref_index), val(sample), path(bam), path(bam_index), path(phased_snv_vcf), path(phased_sv_vcf)
 
     output:
-    path haplotagged_bam, emit: haplotagged_bam
+    tuple val(sample), path (haplotagged_bam)
 
     script:
     haplotagged_prefix = "${sample}_longphase_haplotag"
@@ -132,11 +132,11 @@ process longphase_haplotag {
 }
 
 process haplotag_qc {
-    container "quay.io/shahlab_singularity/haplotagqc:latest"
     publishDir params.outdir, mode: 'copy'
+    container "quay.io/shahlab_singularity/haplotagqc:latest"
 
     input:
-    tuple val(sample), path(haplotagged_bam), path(script)
+    tuple val(sample), path(haplotagged_bam), path(haplotagged_bam_index), path(script)
 
     output:
     path "*.txt", emit: phasing_qc_txt
@@ -145,9 +145,9 @@ process haplotag_qc {
 
     script:
     """
-    python phasingqc.py \\
+    python haplotagqc.py \\
         --bam "$haplotagged_bam" \\
-        --sample "${sample}}"
+        --sample "${sample}"
     """
 }
 
