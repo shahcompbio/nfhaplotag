@@ -24,6 +24,11 @@ runs:
 
       # TODO Skip failing conda tests and document their failures
       # https://github.com/nf-core/modules/issues/7017
+    - name: Set up Singularity install
+      uses: eWaterCycle/setup-singularity@v7
+      with:
+        singularity-version: 3.8.3
+
     - name: Run pipeline smoketest
       shell: bash
       env:
