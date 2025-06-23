@@ -1,0 +1,41 @@
+name: "smoketest Action"
+description: "Runs nf-test with common setup steps"
+inputs:
+  profile:
+    description: "Profile to use"
+    required: true
+  paths:
+    description: "Test paths"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Nextflow
+      uses: nf-core/setup-nextflow@v2
+      with:
+        version: "${{ env.NXF_VERSION }}"
+
+    - name: Set up Singularity
+      if: contains(inputs.profile, 'singularity')
+      shell: bash
+      run: |
+        mkdir -p $NXF_SINGULARITY_CACHEDIR
+        mkdir -p $NXF_SINGULARITY_LIBRARYDIR
+
+      # TODO Skip failing conda tests and document their failures
+      # https://github.com/nf-core/modules/issues/7017
+    - name: Run pipeline smoketest
+      shell: bash
+      env:
+        NFT_DIFF: ${{ env.NFT_DIFF }}
+        NFT_DIFF_ARGS: ${{ env.NFT_DIFF_ARGS }}
+        NFT_WORKDIR: ${{ env.NFT_WORKDIR }}
+      run: |
+        nextflow run main.nf \
+          -profile test,${{ inputs.profile }} 
+
+    - name: Clean up
+      if: always()
+      shell: bash
+      run: |
+        sudo rm -rf .nextflow work results
