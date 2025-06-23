@@ -107,7 +107,7 @@ def calculate_read_counts(reads):
     print(read_counts.columns)
     read_counts = read_counts.rename(columns={1: "allele_1", 2: "allele_2"})
     if read_counts.empty:
-        # This is mostly for testing purposes, to ensure the function returns a DataFrame
+        # This is mostly for testing purposes, to ensure the function returns a DataFrame with the minimal test data
         read_counts = pd.DataFrame(
             [{"chromosome": "chr1", "bin_start": 0, "allele_1": 10, "allele_2": 10, "total": 20, "af": 0.5}],
         )
