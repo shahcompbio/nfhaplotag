@@ -34,9 +34,7 @@ env:
 jobs:
   smoketest-changes:
     name: smoketest-changes
-    runs-on: # use self-hosted runners
-      - runs-on=$-smoketest-changes
-      - runner=4cpu-linux-x64
+    runs-on: ubuntu-latest
     steps:
       - name: Clean Workspace # Purge the workspace in case it's running on a self-hosted runner
         run: |
@@ -52,9 +50,7 @@ jobs:
   smoketest:
     name: "${{ matrix.profile }} | ${{ matrix.NXF_VER }}"
     needs: [smoketest-changes]
-    runs-on: # use self-hosted runners
-      - runs-on=$-smoketest
-      - runner=4cpu-linux-x64
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -84,9 +80,7 @@ jobs:
   confirm-pass:
     needs: [smoketest]
     if: always()
-    runs-on: # use self-hosted runners
-      - runs-on=$-confirm-pass
-      - runner=2cpu-linux-x64
+    runs-on: ubuntu-latest
     steps:
       - name: One or more tests failed
         if: ${{ contains(needs.*.result, 'failure') }}
