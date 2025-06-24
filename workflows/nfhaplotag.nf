@@ -121,6 +121,9 @@ process longphase_haplotag {
     phased_sv_vcf = phased_sv_vcf.name != no_file_name ? phased_sv_vcf : null
 
     """
+    echo "PATH: $PATH"
+    ls /opt/conda/bin
+
     longphase haplotag \\
         -r "$ref" \\
         -s "$phased_snv_vcf" \\
