@@ -27,7 +27,6 @@ runs:
         mkdir -p $NXF_SINGULARITY_CACHEDIR
         mkdir -p $NXF_SINGULARITY_LIBRARYDIR
 
-
     - name: Run pipeline smoketest
       shell: bash
       env:
@@ -36,7 +35,7 @@ runs:
         NFT_WORKDIR: ${{ env.NFT_WORKDIR }}
       run: |
         nextflow run main.nf \
-          -profile test,${{ inputs.profile }} 
+          -profile test,${{ inputs.profile }}
 
     - name: Clean up
       if: always()
