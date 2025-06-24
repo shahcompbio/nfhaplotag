@@ -5,9 +5,9 @@ nf_core_version: 3.3.1
 lint: {}
 
 template:
-  org: nf-core
-  name: nfphasing
-  description: Nextflow pipeline for running phasing software like WhatsHap
+  org: shahcompbio
+  name: nfhaplotag
+  description: Nextflow pipeline for running haplotagging software like WhatsHap and longphase
   author: Tobias Schraink
   version: 1.0.0dev
   force: true

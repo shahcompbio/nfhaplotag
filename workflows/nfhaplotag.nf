@@ -27,27 +27,27 @@ workflow NFPHAPLOTAG {
     inputs = Channel
          .fromPath(samplesheet)
          .splitCsv(header: true)
-         .map { 
+         .map {
             row -> [
                 file(row.ref),
                 file(row.ref_index),
                 row.sample,
                 file(row.bam),
-                file(row.bam_index), 
+                file(row.bam_index),
                 file(row.phased_snv_vcf),
                 file(row.phased_snv_vcf_index),
                 row.phased_sv_vcf ? file(row.phased_sv_vcf) : file(params.no_file) // use no_file as sentinel if sv is not provided
             ]
             }
     whatshap_inputs = inputs
-    .filter { 
+    .filter {
         ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
         phased_sv_vcf.name == no_file_name
     }
     .map { ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
             [ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index]
         }
-    
+
     longphase_inputs = inputs.map { ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
             [ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_sv_vcf]
         }
@@ -56,9 +56,9 @@ workflow NFPHAPLOTAG {
     whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
     longphase_haplotag_results = longphase_haplotag(longphase_inputs)
     indexed_bams = index_bam(longphase_haplotag_results.concat( whatshap_haplotag_results))
-    
-    haplotag_qc_ch = indexed_bams.map { 
-        sample, bam, bam_index ->  
+
+    haplotag_qc_ch = indexed_bams.map {
+        sample, bam, bam_index ->
         [sample, bam, bam_index, haplotag_qc_script]
     }
     haplotag_qc_results = haplotag_qc(haplotag_qc_ch)
