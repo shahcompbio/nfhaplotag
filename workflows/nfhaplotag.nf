@@ -39,29 +39,29 @@ workflow NFPHAPLOTAG {
                 row.phased_sv_vcf ? file(row.phased_sv_vcf) : file(params.no_file) // use no_file as sentinel if sv is not provided
             ]
             }
-    whatshap_inputs = inputs
-    .filter { 
-        ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
-        phased_sv_vcf.name == no_file_name
-    }
-    .map { ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
-            [ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index]
-        }
+    // whatshap_inputs = inputs
+    // .filter { 
+    //     ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
+    //     phased_sv_vcf.name == no_file_name
+    // }
+    // .map { ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
+    //         [ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index]
+    //     }
     
     longphase_inputs = inputs.map { ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
             [ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_sv_vcf]
         }
 
 
-    whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
+    // whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
     longphase_haplotag_results = longphase_haplotag(longphase_inputs)
-    indexed_bams = index_bam(longphase_haplotag_results.concat( whatshap_haplotag_results))
+    // indexed_bams = index_bam(longphase_haplotag_results.concat( whatshap_haplotag_results))
     
-    haplotag_qc_ch = indexed_bams.map { 
-        sample, bam, bam_index ->  
-        [sample, bam, bam_index, haplotag_qc_script]
-    }
-    haplotag_qc_results = haplotag_qc(haplotag_qc_ch)
+    // haplotag_qc_ch = indexed_bams.map { 
+    //     sample, bam, bam_index ->  
+    //     [sample, bam, bam_index, haplotag_qc_script]
+    // }
+    // haplotag_qc_results = haplotag_qc(haplotag_qc_ch)
 
 }
 
