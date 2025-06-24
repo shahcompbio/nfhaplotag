@@ -222,7 +222,6 @@
                 "no_file": {
                     "type": "string",
                     "description": "Location of the no_file sentinel",
-                    "default": "\"${projectDir}/tests/NOFILE\"",
                     "hidden": true
                 },
                 "trace_report_suffix": {
