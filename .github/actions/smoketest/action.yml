@@ -1,5 +1,5 @@
 name: "smoketest Action"
-description: "Runs nf-test with common setup steps"
+description: "Runs smoketest with common setup steps"
 inputs:
   profile:
     description: "Profile to use"
@@ -15,17 +15,18 @@ runs:
       with:
         version: "${{ env.NXF_VERSION }}"
 
-    - name: Set up Singularity
+    - uses: actions/checkout@v2
+    - uses: eWaterCycle/setup-singularity@v7
+      with:
+        singularity-version: 3.8.3
+
+    - name: Set up Singularity Dirs
       if: contains(inputs.profile, 'singularity')
       shell: bash
       run: |
         mkdir -p $NXF_SINGULARITY_CACHEDIR
         mkdir -p $NXF_SINGULARITY_LIBRARYDIR
 
-    - uses: actions/checkout@v2
-    - uses: eWaterCycle/setup-singularity@v7
-      with:
-        singularity-version: 3.8.3
 
     - name: Run pipeline smoketest
       shell: bash
