@@ -219,7 +219,6 @@
                     "description": "Skip QC steps in the pipeline.",
                     "fa_icon": "fas fa-check-square",
                     "default": false
-
                 },
                 "skip_longphase": {
                     "type": "boolean",

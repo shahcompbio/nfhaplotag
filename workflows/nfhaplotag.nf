@@ -44,7 +44,7 @@ workflow NFPHAPLOTAG {
                 row.phased_sv_vcf ? file(row.phased_sv_vcf) : file(params.no_file) // use no_file as sentinel if sv is not provided
             ]
             }
-    
+
     // whatshap
     if (params.skip_whatshap) {
         whatshap_haplotag_results = Channel.empty()
@@ -60,19 +60,19 @@ workflow NFPHAPLOTAG {
 
         whatshap_haplotag_results = whatshap_haplotag(whatshap_inputs)
     }
-    
+
     // longphase
     if (params.skip_longphase) {
         longphase_haplotag_results = Channel.empty()
     } else {
-    longphase_inputs = inputs.map { 
+    longphase_inputs = inputs.map {
         ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_snv_vcf_index, phased_sv_vcf ->
             [ref, ref_index, sample, bam, bam_index, phased_snv_vcf, phased_sv_vcf]
         }
 
     longphase_haplotag_results = longphase_haplotag(longphase_inputs)
     }
-    
+
     if (any_haplotagging) {
         indexed_bams = index_bam(longphase_haplotag_results.concat( whatshap_haplotag_results))
     }
@@ -93,7 +93,7 @@ workflow NFPHAPLOTAG {
         )
     }
 
-} 
+}
 
 process index_bam {
     publishDir params.outdir, mode: 'copy'
