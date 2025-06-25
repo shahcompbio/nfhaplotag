@@ -3,7 +3,7 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
+include { MULTIQC } from '../modules/nf-core/multiqc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,10 +58,19 @@ workflow NFPHAPLOTAG {
     indexed_bams = index_bam(longphase_haplotag_results.concat( whatshap_haplotag_results))
 
     haplotag_qc_ch = indexed_bams.map {
-        sample, bam, bam_index ->
-        [sample, bam, bam_index, haplotag_qc_script]
+        sample, tool, bam, bam_index ->
+        [sample, tool, bam, bam_index, haplotag_qc_script]
     }
     haplotag_qc_results = haplotag_qc(haplotag_qc_ch)
+
+    multiqc_results = MULTIQC(
+        haplotag_qc_results.flatten().map{it -> file(it)}.collect(),
+        [], // no multiqc_config provided
+        [], // no extra_multiqc_config provided
+        [], // no multiqc_logo provided
+        [], // no replace_names provided
+        [] // no sample_names provided
+    )
 
 }
 
@@ -70,10 +79,10 @@ process index_bam {
     container "quay.io/biocontainers/samtools:1.22--h96c455f_0"
 
     input:
-    tuple val(sample), path(bam)
+    tuple val(sample), val(tool), path(bam)
 
     output:
-    tuple val(sample), path(bam), path(indexed_bam)
+    tuple val(sample), val(tool), path(bam), path(indexed_bam)
 
     script:
     indexed_bam = "${bam}.bai"
@@ -90,7 +99,7 @@ process whatshap_haplotag {
     tuple path(ref), path(ref_index), val(sample), path(bam), path(bam_index), path(phased_vcf), path(phased_vcf_index)
 
     output:
-    tuple val(sample), path (haplotagged_bam)
+    tuple val(sample), val("whatshap"), path (haplotagged_bam)
 
     script:
     haplotagged_bam = "${sample}_whatshap_haplotag.bam"
@@ -113,7 +122,7 @@ process longphase_haplotag {
     tuple path(ref), path(ref_index), val(sample), path(bam), path(bam_index), path(phased_snv_vcf), path(phased_sv_vcf)
 
     output:
-    tuple val(sample), path (haplotagged_bam)
+    tuple val(sample), val("longphase"), path (haplotagged_bam)
 
     script:
     haplotagged_prefix = "${sample}_longphase_haplotag"
@@ -136,18 +145,18 @@ process haplotag_qc {
     container "quay.io/shahlab_singularity/haplotagqc:latest"
 
     input:
-    tuple val(sample), path(haplotagged_bam), path(haplotagged_bam_index), path(script)
+    tuple val(sample), val(tool), path(haplotagged_bam), path(haplotagged_bam_index), path(script)
 
     output:
-    path "*.txt", emit: phasing_qc_txt
-    path "*.png", emit: phasing_qc_png
+    tuple path("*.txt"), path("*.png"), path("*.csv")
 
 
     script:
     """
     python haplotagqc.py \\
         --bam "$haplotagged_bam" \\
-        --sample "${sample}"
+        --sample "$sample" \\
+        --tool "$tool"
     """
 }
 

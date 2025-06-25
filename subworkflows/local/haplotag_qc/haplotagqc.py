@@ -50,34 +50,35 @@ def prep_bam_df(bam_path):
     return reads
 
 
-def plot_read_length_distribution(reads, patient_id):
+def plot_read_length_distribution(reads, patient_id, tool):
     """
     Plot the distribution of read lengths.
     """
     plt.figure(figsize=(3, 3))
     sns.histplot(x="length", data=reads, log_scale=True, bins=30)
     sns.despine()
-    plt.title(patient_id)
+    plt.title(f"{patient_id} {tool}")
     plt.savefig(
-        f"{patient_id}_read_length_distribution.png", dpi=300, bbox_inches="tight"
+        f"read_length_distribution_{patient_id}_{tool}_mqc.png", dpi=300, bbox_inches="tight"
     )
     plt.close()
 
 
-def export_fraction_haplotagged(reads, patient_id):
+def export_fraction_haplotagged(reads, patient_id, tool):
     """
     Calculate the fraction of haplotagged reads.
     """
     f = (reads["PS"] != -1).mean()
-    with open(f"{patient_id}_haplotagged_fraction.txt", "w") as f_out:
+    with open(f"haplotagged_fraction_{patient_id}_{tool}_mqc.txt", "w") as f_out:
         f_out.write(f"{f:.4f}")
 
 
 # Compute a table of allele fractions in bins
 # Read stats
-def export_read_stats(reads, patient_id):
+def export_read_stats(reads, patient_id, tool):
     read_stats = (
-        reads.query("PS >= 0")
+        reads
+        # .query("PS >= 0")
         .groupby("PS")
         .agg(
             n_reads=("PS", "size"),
@@ -85,7 +86,7 @@ def export_read_stats(reads, patient_id):
         )
         .reset_index()
     )
-    read_stats.to_csv(f"{patient_id}_read_stats.csv", index=False)
+    read_stats.to_csv(f"read_stats_{patient_id}_{tool}_mqc.csv", index=False)
 
 
 def calculate_read_counts(reads):
@@ -119,7 +120,7 @@ def calculate_read_counts(reads):
     return read_counts
 
 
-def plot_allele_fractions(read_counts, patient_id):
+def plot_allele_fractions(read_counts, patient_id, tool):
     plot_data = read_counts.query("total > 10")
     plt.figure(figsize=(10, 2))
     sns.FacetGrid(
@@ -129,12 +130,12 @@ def plot_allele_fractions(read_counts, patient_id):
         sharey=True,
         sharex=True,
     ).map_dataframe(sns.scatterplot, x="bin_start", y="af", size="total")
-    plt.savefig(f"{patient_id}_allele_fractions.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"allele_fractions_{patient_id}_{tool}_mqc.png", dpi=300, bbox_inches="tight")
     plt.close()
 
 
 # Median absolute deviation
-def export_mad_of_adjacent_diffs(read_counts, patient_id):
+def export_mad_of_adjacent_diffs(read_counts, patient_id, tool):
     """
     Calculate the median absolute deviation of adjacent allele fraction differences.
     """
@@ -147,7 +148,7 @@ def export_mad_of_adjacent_diffs(read_counts, patient_id):
             )
         )
     )
-    with open(f"{patient_id}_mad_of_adjacent_diffs.txt", "w") as f_out:
+    with open(f"mad_of_adjacent_diffs_{patient_id}_{tool}_mqc.txt", "w") as f_out:
         f_out.write(f"{mad_diff:.4f}")
 
 
@@ -163,14 +164,19 @@ def export_mad_of_adjacent_diffs(read_counts, patient_id):
     required=True,
     help="Sample ID for the analysis.",
 )
-def main(bam, sample):
+@click.option(
+    "--tool",
+    required=True,
+    help="Tool for the analysis.",
+)
+def main(bam, sample, tool):
     reads = prep_bam_df(bam)
-    plot_read_length_distribution(reads, sample)
-    export_fraction_haplotagged(reads, sample)
-    export_read_stats(reads, sample)
+    plot_read_length_distribution(reads, sample, tool)
+    export_fraction_haplotagged(reads, sample, tool)
+    export_read_stats(reads, sample, tool)
     read_counts = calculate_read_counts(reads)
-    plot_allele_fractions(read_counts, sample)
-    export_mad_of_adjacent_diffs(read_counts, sample)
+    plot_allele_fractions(read_counts, sample, tool)
+    export_mad_of_adjacent_diffs(read_counts, sample, tool)
 
 
 if __name__ == "__main__":
