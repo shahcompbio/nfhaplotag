@@ -214,6 +214,25 @@
                     "description": "Location of the no_file sentinel",
                     "hidden": true
                 },
+                "skip_qc": {
+                    "type": "boolean",
+                    "description": "Skip QC steps in the pipeline.",
+                    "fa_icon": "fas fa-check-square",
+                    "default": false
+
+                },
+                "skip_longphase": {
+                    "type": "boolean",
+                    "description": "Skip long read haplotagging steps in the pipeline.",
+                    "fa_icon": "fas fa-check-square",
+                    "default": false
+                },
+                "skip_whatshap": {
+                    "type": "boolean",
+                    "description": "Skip WhatsHap haplotagging steps in the pipeline.",
+                    "fa_icon": "fas fa-check-square",
+                    "default": false
+                },
                 "trace_report_suffix": {
                     "type": "string",
                     "fa_icon": "far calendar",
