@@ -169,7 +169,7 @@ process haplotag_qc {
     tuple val(sample), val(tool), path(haplotagged_bam), path(haplotagged_bam_index), path(script)
 
     output:
-    tuple path("*.txt"), path("*.png"), path("*.csv")
+    tuple path("*.png"), path("*.csv")
 
 
     script:

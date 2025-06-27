@@ -69,8 +69,15 @@ def export_fraction_haplotagged(reads, patient_id, tool):
     Calculate the fraction of haplotagged reads.
     """
     f = (reads["PS"] != -1).mean()
-    with open(f"haplotagged_fraction_{patient_id}_{tool}_mqc.txt", "w") as f_out:
-        f_out.write(f"{f:.4f}")
+    df = pd.DataFrame(
+        {
+            "sample": [patient_id],
+            "tool": [tool],
+            "haplotagged_fraction": [f],
+        }, 
+        columns=["sample", "tool", "haplotagged_fraction"]
+    )
+    df.to_csv(f"haplotagged_fraction_{patient_id}_{tool}_mqc.csv", index=False)
 
 
 # Compute a table of allele fractions in bins
@@ -86,6 +93,8 @@ def export_read_stats(reads, patient_id, tool):
         )
         .reset_index()
     )
+    read_stats.insert(0, "sample", patient_id)
+    read_stats.insert(1, "tool", tool)
     read_stats.to_csv(f"read_stats_{patient_id}_{tool}_mqc.csv", index=False)
 
 
@@ -148,8 +157,20 @@ def export_mad_of_adjacent_diffs(read_counts, patient_id, tool):
             )
         )
     )
-    with open(f"mad_of_adjacent_diffs_{patient_id}_{tool}_mqc.txt", "w") as f_out:
-        f_out.write(f"{mad_diff:.4f}")
+    print(f"mad_diff:{mad_diff}, type:{type(mad_diff)}, isnan:{np.isnan(mad_diff)}")
+    if np.isnan(mad_diff):
+        mad_diff = 0.0
+    df = pd.DataFrame(
+        {
+            "sample": [patient_id],
+            "tool": [tool],
+            "mad_of_adjacent_diffs": [mad_diff],
+        },
+        columns=["sample", "tool", "mad_of_adjacent_diffs"]
+    )
+    df.to_csv(f"mad_of_adjacent_diffs_{patient_id}_{tool}_mqc.csv", index=False)
+    # with open(f"mad_of_adjacent_diffs_{patient_id}_{tool}_mqc.txt", "w") as f_out:
+    #     f_out.write(f"{mad_diff:.4f}")
 
 
 @click.command()
